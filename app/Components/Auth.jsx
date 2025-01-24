@@ -8,7 +8,7 @@ import { useAuth } from "../Context/authcontext"
 
 export default function Auth() {
     const [isSignedUp, setIsSignedUp] = useState(true);
-    const { auth, user } = useAuth();
+    const { authUser, user } = useAuth();
 
     const router = useRouter();
 
@@ -33,7 +33,7 @@ export default function Auth() {
             e.preventDefault()
             setLoading(true)
 
-            auth("/auth/login", { email, password });
+            authUser("/auth/login", { email, password });
 
             console.log(email, password);
         }
@@ -158,7 +158,7 @@ export default function Auth() {
             //     setLoading(true);
             // }
 
-            auth("/auth/signup", { username, email, password });
+            authUser("/auth/signup", { username, email, password });
 
             console.log(username, email, password);
         }

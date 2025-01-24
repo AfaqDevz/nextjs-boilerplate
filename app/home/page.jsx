@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 
 
 export default function Home() {
-    const { auth, user, logout } = useAuth();
+    const { user, logOutUser } = useAuth();
 
     const router = useRouter();
 
@@ -19,7 +19,7 @@ export default function Home() {
     }, [user]);
     return (
         <div>Home
-            <button onClick={() => { logout() }}>Logout</button>
+            <button onClick={() => { logOutUser() }}>Logout</button>
         </div>
     )
 }
