@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../Context/authcontext";
 import Card from "../Components/Card";
-import LoanRequestForm from "./LoanRequestForm";
+import LoanRequestForm from "../Components/LoanRequestForm";
 
 export default function Dashboard() {
     const { user, loading } = useAuth();
