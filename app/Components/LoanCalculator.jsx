@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Card from "./Card"
 import { useAuth } from "../Context/authcontext"
+import toast from "react-hot-toast"
 
 const loanCategories = {
     "Wedding Loans": { subcategories: ["Valima", "Furniture", "Valima Food", "Jahez"], maxLoan: 500000, maxPeriod: 3 },
@@ -22,10 +23,9 @@ const LoanCalculator = () => {
     const [initialDeposit, setInitialDeposit] = useState("")
     const [loanPeriod, setLoanPeriod] = useState("")
     const [loanBreakdown, setLoanBreakdown] = useState(null)
-    const { user } = useAuth() // Use the useAuth hook to get the user
+    const { user } = useAuth()
 
     useEffect(() => {
-        // Load saved loan data from localStorage when component mounts
         const savedLoanData = localStorage.getItem("loanData")
         if (savedLoanData) {
             const parsedData = JSON.parse(savedLoanData)
@@ -35,11 +35,13 @@ const LoanCalculator = () => {
             setLoanPeriod(parsedData.loanPeriod || "")
             setLoanBreakdown(parsedData.loanBreakdown || null)
         }
+
     }, [])
 
     const handleCalculate = () => {
         if (!category || !initialDeposit || !loanPeriod) {
-            alert("Please fill in all required fields.")
+            // alert("Please fill in all required fields.")
+            toast.error('Please fill in all fields!');
             return
         }
 
@@ -48,12 +50,14 @@ const LoanCalculator = () => {
         const period = Number.parseInt(loanPeriod)
 
         if (deposit >= selectedCategory.maxLoan) {
-            alert("Initial deposit cannot be greater than or equal to the maximum loan amount.")
+            // alert("Initial deposit cannot be greater than or equal to the maximum loan amount.")
+            toast.error(`Initial deposit should be under ${selectedCategory.maxLoan}`);
             return
         }
 
         if (period > selectedCategory.maxPeriod) {
-            alert(`Loan period cannot exceed ${selectedCategory.maxPeriod} years.`)
+            // alert(`Loan period cannot exceed ${selectedCategory.maxPeriod} years.`)
+            toast.error(`Loan period can be maximum ${selectedCategory.maxPeriod} years.`)
             return
         }
 
@@ -67,7 +71,6 @@ const LoanCalculator = () => {
 
         setLoanBreakdown(newLoanBreakdown)
 
-        // Save loan data to localStorage
         const loanData = {
             category,
             subcategory,
@@ -88,7 +91,7 @@ const LoanCalculator = () => {
                     </label>
                     <select
                         id="category"
-                        className="w-full p-2 bg-white bg-opacity-20 rounded-md text-white"
+                        className="w-full p-2 bg-green-600 rounded-md text-white"
                         value={category}
                         onChange={(e) => {
                             setCategory(e.target.value)
@@ -111,7 +114,7 @@ const LoanCalculator = () => {
                         </label>
                         <select
                             id="subcategory"
-                            className="w-full p-2 bg-white bg-opacity-20 rounded-md text-white"
+                            className="w-full p-2 bg-green-600 rounded-md text-white"
                             value={subcategory}
                             onChange={(e) => setSubcategory(e.target.value)}
                             disabled={!category}
@@ -133,7 +136,7 @@ const LoanCalculator = () => {
                     <input
                         id="initialDeposit"
                         type="number"
-                        className="w-full p-2 bg-white bg-opacity-20 rounded-md text-white"
+                        className="w-full p-2 bg-green-600 rounded-md text-white"
                         value={initialDeposit}
                         onChange={(e) => setInitialDeposit(e.target.value)}
                         placeholder="Enter initial deposit"
@@ -147,7 +150,7 @@ const LoanCalculator = () => {
                     <input
                         id="loanPeriod"
                         type="number"
-                        className="w-full p-2 bg-white bg-opacity-20 rounded-md text-white"
+                        className="w-full p-2 bg-green-600 rounded-md text-white"
                         value={loanPeriod}
                         onChange={(e) => setLoanPeriod(e.target.value)}
                         placeholder="Enter loan period"
@@ -157,7 +160,7 @@ const LoanCalculator = () => {
 
                 <div className="flex justify-end">
                     <button
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+                        className="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
                         onClick={handleCalculate}
                         disabled={!category || !initialDeposit || !loanPeriod}
                     >
@@ -166,30 +169,32 @@ const LoanCalculator = () => {
                 </div>
 
                 {loanBreakdown && (
-                    <div className="mt-6 p-4 bg-white bg-opacity-20 rounded-lg">
-                        <h2 className="text-xl font-semibold mb-2 text-white">Loan Breakdown</h2>
-                        <p className="text-white">Loan Amount: PKR {loanBreakdown.loanAmount.toLocaleString()}</p>
-                        <p className="text-white">Monthly Payment: PKR {loanBreakdown.monthlyPayment}</p>
+                    <div>
+                        <div className="mt-6 p-4 bg-green-600 rounded-lg">
+                            <h2 className="text-xl font-semibold mb-2 text-white">Loan Breakdown</h2>
+                            <p className="text-white">Loan Amount: PKR {loanBreakdown.loanAmount.toLocaleString()}</p>
+                            <p className="text-white">Monthly Payment: PKR {loanBreakdown.monthlyPayment}</p>
+                        </div>
+                        <div className="mt-6">
+                            {user ? (
+                                <Link
+                                    href="/loan-request"
+                                    className="block w-full text-center bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+                                >
+                                    Proceed with Loan Application
+                                </Link>
+                            ) : (
+                                <Link
+                                    href="/register"
+                                    className="block w-full text-center bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+                                >
+                                    Register to Apply for a Loan
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 )}
 
-                <div className="mt-6">
-                    {user ? (
-                        <Link
-                            href="/loan-request"
-                            className="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
-                        >
-                            Proceed with Loan Application
-                        </Link>
-                    ) : (
-                        <Link
-                            href="/register"
-                            className="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
-                        >
-                            Register to Apply for a Loan
-                        </Link>
-                    )}
-                </div>
             </div>
         </Card>
     )

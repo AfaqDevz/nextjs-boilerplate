@@ -12,8 +12,16 @@ const Header = () => {
 
     const navItems = [
         { name: "Home", href: "/" },
-        { name: user ? "Dashboard" : "Login", href: user ? "/dashboard" : "/login" },
-    ]
+    ];
+
+    if (user?.isAdmin) {
+        navItems.push({ name: "Admin", href: "/admin" });
+    } else if (user) {
+        navItems.push({ name: "Dashboard", href: "/dashboard" });
+    } else {
+        navItems.push({ name: "Login", href: "/login" });
+    }
+
 
     if (user) {
         navItems.push({ name: "Logout", href: "#", onClick: logout })
