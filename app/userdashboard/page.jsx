@@ -1,50 +1,55 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import axios from "axios"
-import { useAuth } from "../../context/AuthContext"
-import Card from "../../components/Card"
-import LoanRequestForm from "../../components/LoanRequestForm"
-
-const loanCategories = {
-    "Wedding Loans": ["Valima", "Furniture", "Valima Food", "Jahez"],
-    "Home Construction Loans": ["Structure", "Finishing", "Loan"],
-    "Business Startup Loans": ["Buy Stall", "Advance Rent for Shop", "Shop Assets", "Shop Machinery"],
-    "Education Loans": ["University Fees", "Child Fees Loan"],
-}
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
+import Card from "../Components/Card";
+import LoanRequestForm from "./LoanRequestForm";
 
 export default function Dashboard() {
-    const { user } = useAuth()
-    const router = useRouter()
-    const [loans, setLoans] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState("")
+    const { user, loading } = useAuth();
+    const router = useRouter();
+    const [loans, setLoans] = useState([]);
+    const [fetchingLoans, setFetchingLoans] = useState(true);
+    const [error, setError] = useState("");
 
+    // Fetch loans when the user is authenticated
     useEffect(() => {
-        if (!user) {
-            router.push("/login")
-        } else {
-            fetchLoans()
+        if (!loading && !user) {
+            router.push("/login"); // Redirect to login if not authenticated
+        } else if (user) {
+            fetchLoans();
         }
-    }, [user, router])
+    }, [user, loading, router]);
 
     const fetchLoans = async () => {
         try {
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/loans/details/${user.id}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            })
-            setLoans(response.data.data)
-            setLoading(false)
-        } catch (err) {
-            setError("Failed to fetch loans. Please try again.")
-            setLoading(false)
-        }
-    }
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            if (!token) {
+                setError("Token not found. Please log in again.");
+                setFetchingLoans(false);
+                return;
+            }
 
-    if (!user) return null
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/loans/details`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setLoans(response.data.data || []); // Handle empty data gracefully
+            setFetchingLoans(false);
+        } catch (err) {
+            console.error("Error fetching loans:", err);
+            setError("Failed to fetch loans. Please try again later.");
+            setFetchingLoans(false);
+        }
+    };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -52,7 +57,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Card>
                     <h2 className="text-2xl font-semibold mb-4 text-white">Your Loan Requests</h2>
-                    {loading ? (
+                    {fetchingLoans ? (
                         <p className="text-white">Loading...</p>
                     ) : error ? (
                         <p className="text-red-500">{error}</p>
@@ -78,6 +83,5 @@ export default function Dashboard() {
                 </Card>
             </div>
         </div>
-    )
+    );
 }
-
